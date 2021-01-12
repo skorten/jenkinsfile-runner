@@ -10,6 +10,7 @@ def buildNumber = currentBuild.number
 /* These platforms correspond to labels in ci.jenkins.io, see:
  *  https://github.com/jenkins-infra/documentation/blob/master/ci.adoc
  */
+
 Map branches = [:]
 
 for (int i = 0; i < platforms.size(); ++i) {
@@ -42,53 +43,3 @@ for (int i = 0; i < platforms.size(); ++i) {
 /* Execute our platforms in parallel */
 parallel(branches)
 
-stage('Verify Custom WAR Packager demo')
-Map demos = [:]
-demos['cwp'] = {
-    node('docker') {
-        timestamps {
-            ws("cwp_${branchName}_${buildNumber}") {
-                checkout scm
-                stage('CWP') {
-                    dir('demo/cwp') {
-                        sh "make clean buildInDocker run"
-                    }
-                }
-            }
-        }
-    }
-}
-
-parallel(demos)
-
-node('docker') {
-    ws("container_${branchName}_${buildNumber}") {
-        infra.withDockerCredentials {
-            def image
-            def imageName = "${env.DOCKERHUB_ORGANISATION}/jenkinsfile-runner"
-            def imageTag
-
-            stage('Build container') {
-                timestamps {
-                    def scmVars = checkout scm
-
-                    def shortCommit = scmVars.GIT_COMMIT
-                    imageTag = branchName.equals("master") ? "latest" : branchName
-                    echo "Creating the container ${imageName}:${imageTag}"
-                    sh "docker build -t ${imageName}:${imageTag} --no-cache --rm -f packaging/docker/unix/adoptopenjdk-8-hotspot/Dockerfile ."
-                }
-            }
-
-  // TODO(oleg-nenashev): Reenable once CI is stable
-  //          if (branchName.startsWith('master')) {
-  //              stage('Publish container') {
-  //                  timestamps {
-  //                      image.push();
-  //                  }
-  //              }
-  //          }
-        }
-    }
-}
-
-// TODO: Run integration tests
