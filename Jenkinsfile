@@ -2,7 +2,7 @@
 
 // TODO: Move it to Jenkins Pipeline Library
 
-def branchName = currentBuild.projectName
+def branchName = master
 def buildNumber = currentBuild.number
 
 /* These platforms correspond to labels in ci.jenkins.io, see:
@@ -27,6 +27,5 @@ def buildNumber = currentBuild.number
                     }
               
 
-/* Execute our platforms in parallel */
-parallel(branches)
+
 
