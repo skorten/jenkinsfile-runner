@@ -9,14 +9,7 @@ def buildNumber = currentBuild.number
  *  https://github.com/jenkins-infra/documentation/blob/master/ci.adoc
  */
 
-Map branches = [:]
 
-for (int i = 0; i < platforms.size(); ++i) {
-    String label = platforms[i]
-    branches[label] = {
-        node(label) {
-            timestamps {
-                ws("platform_${label}_${branchName}_${buildNumber}") {
                     stage('Checkout') {
                         checkout scm
                     }
@@ -32,11 +25,7 @@ for (int i = 0; i < platforms.size(); ++i) {
                             sh '/usr/local/bin/sl analyze --app HelloShiftLeft --java target/hello-shiftleft-0.0.1.jar'
                         }
                     }
-                }
-            }
-        }
-    }
-}
+              
 
 /* Execute our platforms in parallel */
 parallel(branches)
