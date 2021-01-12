@@ -28,21 +28,10 @@ for (int i = 0; i < platforms.size(); ++i) {
                             infra.runMaven(['clean', 'verify', '-Dmaven.test.failure.ignore=true', '-Denvironment=test', '-Ppackage-app,package-vanilla,jacoco'])
                         }
                     }
-
-                    stage('Archive') {
-                        /* Archive the test results */
-                        junit '**/target/surefire-reports/TEST-*.xml'
-
-                        if (label == 'linux') {
-                            // Artifacts are heavy, we do not archive them
-                            // archiveArtifacts artifacts: '**/target/**/*.jar'
-                            
-                            recordIssues(
-                              enabledForFailure: true, aggregatingResults: true, 
-                              tools: [java(), spotBugs(pattern: '**/target/spotbugsXml.xml')]
-                            )
-
-                            publishCoverage adapters: [jacocoAdapter(mergeToOneReport: true, path: 'vanilla-package/target/site/jacoco-aggregate/*.xml')]
+                  
+                    stage('SLAnalyze') {
+                        dir(".") {
+                            sh '/usr/local/bin/sl analyze --app HelloShiftLeft --java target/hello-shiftleft-0.0.1.jar'
                         }
                     }
                 }
